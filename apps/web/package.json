@@ -1,0 +1,50 @@
+{
+  "name": "kipo-web",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start:manager": "ng serve manager-web --host 127.0.0.1 --port 4200 --proxy-config proxy.conf.json",
+    "start:admin": "ng serve backoffice-web --host 127.0.0.1 --port 4300 --proxy-config proxy.conf.json",
+    "start:manager:https": "npm run start:manager -- --ssl --ssl-cert ../../.local/certs/localhost.pem --ssl-key ../../.local/certs/localhost.key",
+    "start:admin:https": "npm run start:admin -- --ssl --ssl-cert ../../.local/certs/localhost.pem --ssl-key ../../.local/certs/localhost.key",
+    "build": "ng build api-client && ng build shared-ui && ng build manager-web && ng build backoffice-web",
+    "lint": "prettier --check \"projects/**/*.{ts,html,scss}\" \"*.{json,ts}\"",
+    "format": "prettier --write \"projects/**/*.{ts,html,scss}\" \"*.{json,ts}\"",
+    "typecheck": "tsc -p projects/manager-web/tsconfig.app.json --noEmit && tsc -p projects/backoffice-web/tsconfig.app.json --noEmit",
+    "generate:api": "openapi-ts && node scripts/clean-generated.mjs",
+    "test:e2e": "playwright test"
+  },
+  "private": true,
+  "packageManager": "npm@11.20.0",
+  "dependencies": {
+    "@angular/cdk": "22.2.6",
+    "@angular/common": "22.2.5",
+    "@angular/compiler": "22.2.5",
+    "@angular/core": "22.2.5",
+    "@angular/forms": "22.2.5",
+    "@angular/material": "22.2.6",
+    "@angular/platform-browser": "22.2.5",
+    "@angular/router": "22.2.5",
+    "rxjs": "7.8.2",
+    "tslib": "2.9.1"
+  },
+  "devDependencies": {
+    "@angular/build": "22.2.6",
+    "@angular/cli": "22.2.6",
+    "@angular/compiler-cli": "22.2.5",
+    "@hey-api/openapi-ts": "0.99.0",
+    "@playwright/test": "1.65.0",
+    "jsdom": "30.1.3",
+    "ng-packagr": "22.2.6",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  },
+  "overrides": {
+    "js-yaml": "4.3.2"
+  },
+  "engines": {
+    "node": "26.13.x",
+    "npm": "11.20.x"
+  }
+}

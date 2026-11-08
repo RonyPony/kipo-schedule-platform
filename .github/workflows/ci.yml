@@ -1,0 +1,51 @@
+name: Kipo CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: apps/web/.nvmrc
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python scripts/check-source.py
+      - run: dotnet tool restore
+      - run: dotnet restore Kipo.slnx --locked-mode
+      - run: dotnet format Kipo.slnx --verify-no-changes --no-restore
+      - run: dotnet build Kipo.slnx --no-restore --configuration Release
+      - run: dotnet test Kipo.slnx --no-build --configuration Release
+      - run: dotnet publish src/Platform.Api --no-build --configuration Release --output artifacts/api
+      - run: npm ci
+        working-directory: apps/web
+      - run: npm audit --audit-level=high
+        working-directory: apps/web
+      - run: npm run lint
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web
+      - run: npm run typecheck
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: |
+          mkdir -p .local/certs
+          dotnet dev-certs https --export-path .local/certs/localhost.pem --format PEM --no-password
+      - run: npm run test:e2e
+        working-directory: apps/web
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kipo-builds
+          path: |
+            apps/web/dist/manager-web
+            apps/web/dist/backoffice-web
+            artifacts/api
