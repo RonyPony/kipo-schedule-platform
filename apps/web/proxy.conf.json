@@ -2,6 +2,7 @@
   "/api": {
     "target": "http://127.0.0.1:5080",
     "secure": false,
-    "changeOrigin": false
+    "changeOrigin": false,
+    "xfwd": true
   }
 }

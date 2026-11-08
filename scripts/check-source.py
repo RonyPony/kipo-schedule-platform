@@ -5,7 +5,7 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 result = subprocess.run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'], cwd=root, check=True, capture_output=True)
 errors = []
-extensions = {'.cs', '.csproj', '.props', '.json', '.ts', '.mjs', '.html', '.scss', '.md', '.yaml', '.yml', '.py', '.ps1', '.slnx'}
+extensions = {'.cs', '.csproj', '.props', '.json', '.ts', '.mjs', '.html', '.scss', '.md', '.yaml', '.yml', '.py', '.ps1', '.slnx', '.sql'}
 secret_patterns = [r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', r'gh[pousr]_[A-Za-z0-9]{30,}', r'AKIA[A-Z0-9]{16}']
 for name in result.stdout.decode('utf-8').split('\0'):
     if not name:

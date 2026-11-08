@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Platform.Application.Observability;
 using Platform.Infrastructure.Observability;
+using Platform.Api.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 if (builder.Environment.IsDevelopment())
@@ -29,9 +30,16 @@ builder.Services.AddProblemDetails(options =>
     };
 });
 builder.Services.AddOpenApi("v1");
+builder.AddPlatformAuthentication();
 builder.Services.AddHealthChecks().AddCheck<SqlServerHealthCheck>("sql-server", tags: ["ready"]);
 
 var app = builder.Build();
+if (builder.Configuration.GetValue<bool>("LocalUser:Create"))
+{
+    await LocalUserBootstrap.RunAsync(app.Services, app.Environment);
+    return;
+}
+if (app.Environment.IsDevelopment()) app.UseForwardedHeaders();
 app.Use(async (context, next) =>
 {
     var supplied = context.Request.Headers["X-Correlation-ID"].ToString();
@@ -56,6 +64,10 @@ app.Use(async (context, next) =>
 });
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
+app.MapControllers();
 app.MapHealthChecks("/api/v1/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/api/v1/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 app.MapGet("/api/v1/status", () => new ServiceStatus("Kipo", "available", "v1"))
@@ -63,6 +75,12 @@ app.MapGet("/api/v1/status", () => new ServiceStatus("Kipo", "available", "v1"))
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "Kipo API v1");
+        options.DocumentTitle = "Kipo · API";
+        options.UseRequestInterceptor("(request) => { if (['POST','PUT','PATCH','DELETE'].includes((request.method || 'GET').toUpperCase())) { return fetch('/api/v1/auth/csrf', { credentials: 'same-origin' }).then(response => { if (!response.ok) throw new Error('No se pudo obtener el token de seguridad.'); return response.json(); }).then(token => { request.headers[token.headerName] = token.token; return request; }); } return request; }");
+    });
 }
 app.Run();
 

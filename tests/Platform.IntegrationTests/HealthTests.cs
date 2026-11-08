@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Platform.Application.Observability;
 
@@ -58,5 +59,15 @@ public sealed class HealthTests : IClassFixture<WebApplicationFactory<Program>>
         var status = await client.GetFromJsonAsync<ServiceStatus>("/api/v1/status");
         Assert.Equal("Kipo", status?.Product);
         Assert.Equal("v1", status?.ApiVersion);
+    }
+
+    [Fact]
+    public async Task SwaggerIsAvailableOnlyInDevelopment()
+    {
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/swagger/index.html")).StatusCode);
+        using var production = new WebApplicationFactory<Program>().WithWebHostBuilder(builder => builder.UseEnvironment("Production"));
+        using var productionClient = production.CreateClient();
+        Assert.Equal(HttpStatusCode.NotFound, (await productionClient.GetAsync("/swagger/index.html")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await productionClient.GetAsync("/openapi/v1.json")).StatusCode);
     }
 }
