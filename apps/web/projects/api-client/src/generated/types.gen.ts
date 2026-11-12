@@ -2,6 +2,19 @@ export type ClientOptions = {
   baseUrl: 'https://localhost:7080/' | (string & {});
 };
 
+export type BusinessDetails = {
+  id: string;
+  name: string;
+  activity: string;
+  phone: string;
+  countryCode: string;
+  timeZoneId: string;
+  weekStartsOn: number | string;
+  slotMinutes: number | string;
+  role: string;
+  rowVersion: string;
+};
+
 export type CsrfToken = {
   token: string;
   headerName: string;
@@ -32,6 +45,13 @@ export type ServiceStatus = {
   product: string;
   status: string;
   apiVersion: string;
+};
+
+export type UpdateBusinessRequest = {
+  name: string;
+  activity: string;
+  phone: string;
+  rowVersion: string;
 };
 
 export type GetServiceStatusData = {
@@ -128,3 +148,61 @@ export type PostApiV1AuthLogoutAllResponses = {
 
 export type PostApiV1AuthLogoutAllResponse =
   PostApiV1AuthLogoutAllResponses[keyof PostApiV1AuthLogoutAllResponses];
+
+export type GetApiV1BusinessesByBusinessIdData = {
+  body?: never;
+  path: {
+    businessId: string;
+  };
+  query?: never;
+  url: '/api/v1/businesses/{businessId}';
+};
+
+export type GetApiV1BusinessesByBusinessIdErrors = {
+  401: ProblemDetails;
+
+  403: ProblemDetails;
+
+  404: ProblemDetails;
+};
+
+export type GetApiV1BusinessesByBusinessIdError =
+  GetApiV1BusinessesByBusinessIdErrors[keyof GetApiV1BusinessesByBusinessIdErrors];
+
+export type GetApiV1BusinessesByBusinessIdResponses = {
+  200: BusinessDetails;
+};
+
+export type GetApiV1BusinessesByBusinessIdResponse =
+  GetApiV1BusinessesByBusinessIdResponses[keyof GetApiV1BusinessesByBusinessIdResponses];
+
+export type PatchApiV1BusinessesByBusinessIdData = {
+  body: UpdateBusinessRequest;
+  path: {
+    businessId: string;
+  };
+  query?: never;
+  url: '/api/v1/businesses/{businessId}';
+};
+
+export type PatchApiV1BusinessesByBusinessIdErrors = {
+  400: ProblemDetails;
+
+  401: ProblemDetails;
+
+  403: ProblemDetails;
+
+  404: ProblemDetails;
+
+  409: ProblemDetails;
+};
+
+export type PatchApiV1BusinessesByBusinessIdError =
+  PatchApiV1BusinessesByBusinessIdErrors[keyof PatchApiV1BusinessesByBusinessIdErrors];
+
+export type PatchApiV1BusinessesByBusinessIdResponses = {
+  200: BusinessDetails;
+};
+
+export type PatchApiV1BusinessesByBusinessIdResponse =
+  PatchApiV1BusinessesByBusinessIdResponses[keyof PatchApiV1BusinessesByBusinessIdResponses];

@@ -34,6 +34,11 @@ builder.AddPlatformAuthentication();
 builder.Services.AddHealthChecks().AddCheck<SqlServerHealthCheck>("sql-server", tags: ["ready"]);
 
 var app = builder.Build();
+if (builder.Configuration.GetValue<bool>("Admin:Create") || builder.Configuration.GetValue<bool>("Admin:ResetMfa"))
+{
+    await AdminBootstrap.RunAsync(app.Services, builder.Configuration.GetValue<bool>("Admin:ResetMfa"));
+    return;
+}
 if (builder.Configuration.GetValue<bool>("LocalUser:Create"))
 {
     await LocalUserBootstrap.RunAsync(app.Services, app.Environment);
@@ -79,7 +84,7 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/openapi/v1.json", "Kipo API v1");
         options.DocumentTitle = "Kipo · API";
-        options.UseRequestInterceptor("(request) => { if (['POST','PUT','PATCH','DELETE'].includes((request.method || 'GET').toUpperCase())) { return fetch('/api/v1/auth/csrf', { credentials: 'same-origin' }).then(response => { if (!response.ok) throw new Error('No se pudo obtener el token de seguridad.'); return response.json(); }).then(token => { request.headers[token.headerName] = token.token; return request; }); } return request; }");
+        options.UseRequestInterceptor("(request) => { if (['POST','PUT','PATCH','DELETE'].includes((request.method || 'GET').toUpperCase())) { return fetch(new URL(request.url, window.location.origin).pathname.startsWith('/api/v1/admin/') ? '/api/v1/admin/auth/csrf' : '/api/v1/auth/csrf', { credentials: 'same-origin' }).then(response => { if (!response.ok) throw new Error('No se pudo obtener el token de seguridad.'); return response.json(); }).then(token => { request.headers[token.headerName] = token.token; return request; }); } return request; }");
     });
 }
 app.Run();

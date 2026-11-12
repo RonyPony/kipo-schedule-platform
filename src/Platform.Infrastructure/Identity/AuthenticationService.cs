@@ -59,7 +59,7 @@ public sealed class AuthenticationService(
     {
         var now = clock.GetUtcNow();
         var session = await database.UserSessions.AsNoTracking().SingleOrDefaultAsync(
-            item => item.Id == sessionId && item.UserId == userId && item.RevokedAt == null && item.ExpiresAt > now,
+            item => item.Id == sessionId && item.UserId == userId && !item.IsAdministrative && item.RevokedAt == null && item.ExpiresAt > now,
             cancellationToken);
         if (session is null) return null;
         var user = await database.Users.AsNoTracking().SingleOrDefaultAsync(item => item.Id == userId, cancellationToken);
@@ -74,7 +74,7 @@ public sealed class AuthenticationService(
     {
         var now = clock.GetUtcNow();
         await using var transaction = await database.Database.BeginTransactionAsync(cancellationToken);
-        await database.UserSessions.Where(session => session.UserId == userId && session.RevokedAt == null && (allSessions || session.Id == sessionId))
+        await database.UserSessions.Where(session => session.UserId == userId && !session.IsAdministrative && session.RevokedAt == null && (allSessions || session.Id == sessionId))
             .ExecuteUpdateAsync(setters => setters.SetProperty(session => session.RevokedAt, now), cancellationToken);
         database.AuthenticationAudits.Add(new AuthenticationAudit
         {

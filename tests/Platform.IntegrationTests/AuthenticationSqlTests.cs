@@ -211,7 +211,7 @@ public sealed class AuthenticationSqlTests(AuthenticationSqlFixture fixture) : I
         var response = await AuthenticationSqlFixture.Post(client, "/api/v1/auth/login", new LoginRequest(pending.User.Email!, pending.Password));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("PendingApproval", (await response.Content.ReadFromJsonAsync<CurrentUser>())!.State);
-        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/api/v1/admin/auth/me")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/admin/auth/me")).StatusCode);
         var admin = await fixture.CreateUser(admin: true);
         using var administrativeClient = fixture.Client();
         Assert.Equal(HttpStatusCode.Unauthorized, (await AuthenticationSqlFixture.Post(administrativeClient, "/api/v1/auth/login", new LoginRequest(admin.User.Email!, admin.Password))).StatusCode);

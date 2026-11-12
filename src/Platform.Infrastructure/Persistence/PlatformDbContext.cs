@@ -9,9 +9,11 @@ using Platform.Domain.Registration;
 
 namespace Platform.Infrastructure.Persistence;
 
-public sealed class PlatformDbContext(DbContextOptions<PlatformDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+public class PlatformDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
+    public PlatformDbContext(DbContextOptions<PlatformDbContext> options) : base(options) { }
+    protected PlatformDbContext(DbContextOptions options) : base(options) { }
+
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<AuthenticationAudit> AuthenticationAudits => Set<AuthenticationAudit>();
     public DbSet<Business> Businesses => Set<Business>();
